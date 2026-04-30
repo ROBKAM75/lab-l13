@@ -1,6 +1,6 @@
 import {
   Fab, DialogActions, Container, Typography, Box, Grid,
-  Dialog, DialogContent, DialogContentText, LinearProgress, Button, TextField
+  Dialog, DialogContent, DialogContentText, LinearProgress, Button, TextField, CircularProgress
 } from '@mui/material'
 import AddIcon from '@mui/icons-material/Add'
 import React, { useState, FormEvent, ChangeEvent } from 'react'
@@ -18,6 +18,7 @@ const CommitmentForm = () => {
   const hostingURL = 'https://nanostore.babbage.systems'
   const [committedURL, setCommittedURL] = useState<string | null>(null)
   const [downloading, setDownloading] = useState<boolean>(false)
+  const [statusMsg, setStatusMsg] = useState<string>('')
   const [lookupURL, setLookupURL] = useState<string>('')
   const [lookupDownloading, setLookupDownloading] = useState<boolean>(false)
 
@@ -95,12 +96,14 @@ const CommitmentForm = () => {
         return
       }
 
+      setStatusMsg('Uploading file to nanostore...')
       const uhrpURL = await publishCommitment({
         url: submitURL,
         hostingMinutes: hostingTime,
         serviceURL: hostingURL,
         testWerrLabel: false
       })
+      setStatusMsg('Done!')
 
       console.log('Commitment published:', uhrpURL)
       setCommittedURL(uhrpURL)
@@ -169,7 +172,12 @@ const CommitmentForm = () => {
                 />
               </DialogContent>
               {formLoading ? (
-                <LinearProgress />
+                <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center', py: 3, gap: 2 }}>
+                  <CircularProgress size={48} thickness={4} />
+                  <Typography variant="body2" color="text.secondary">
+                    {statusMsg || 'Processing...'}
+                  </Typography>
+                </Box>
               ) : (
                 <DialogActions>
                   <Button onClick={() => setFormOpen(false)}>Cancel</Button>

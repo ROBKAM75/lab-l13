@@ -1,0 +1,45 @@
+# Dependencies
+node_modules/
+*/node_modules/
+
+# Build outputs
+dist/
+build/
+*.js.map
+
+# Environment files (contains secrets!)
+.env
+.env.local
+.env.*.local
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Logs
+*.log
+npm-debug.log*
+
+# TypeScript cache
+*.tsbuildinfo
+
+# Vite
+.vite/
+
+# Local data
+local-data/
+
+# Assignment/lesson files
+*.pdf
+*.jpg
+*.txt
+!README.txt
+
+# npmrc (platform-specific, breaks cross-platform)
+.npmrc

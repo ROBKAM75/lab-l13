@@ -3,13 +3,11 @@ import { PushDrop, Utils, Transaction, TopicBroadcaster, WalletClient, StorageUp
 export async function publishCommitment({
   url,
   hostingMinutes,
-  address,
   serviceURL = 'https://nanostore.babbage.systems',
   testWerrLabel = false
 }: {
   url: string
   hostingMinutes: number
-  address: string
   serviceURL?: string
   testWerrLabel: boolean
 }): Promise<string> {
@@ -91,15 +89,28 @@ export async function publishCommitment({
     await broadcaster.broadcast(tx)
 
     console.log('Transaction created and broadcasted:', tx.id('hex'))
+    console.log('[commitmentToken] Token created with TXID:', tx.id('hex'))
     return `${UHRPURL}`
-  } catch (error) {
-    if (error instanceof WERR_REVIEW_ACTIONS) {
+  } catch (err: unknown) {
+    if (err instanceof WERR_REVIEW_ACTIONS) {
       console.error('[commitmentToken] Wallet threw WERR_REVIEW_ACTIONS:', {
-        code: error.code,
-        message: error.message
+        code: err.code,
+        message: err.message,
+        reviewActionResults: err.reviewActionResults,
+        sendWithResults: err.sendWithResults,
+        txid: err.txid,
+        tx: err.tx,
+        noSendChange: err.noSendChange
       })
+    } else if (err instanceof Error) {
+      console.error('[commitmentToken] Failed with error:', {
+        message: err.message,
+        name: err.name,
+        stack: err.stack
+      })
+    } else {
+      console.error('[commitmentToken] Failed with unknown error:', err)
     }
-    console.error('Error creating commitment:', error)
-    throw error
+    throw err
   }
 }

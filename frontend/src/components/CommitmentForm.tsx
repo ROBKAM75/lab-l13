@@ -5,7 +5,6 @@ import {
 import AddIcon from '@mui/icons-material/Add'
 import React, { useState, FormEvent, ChangeEvent } from 'react'
 import { publishCommitment } from '../utils/publishCommitment'
-import { WalletClient } from '@bsv/sdk'
 import { toast } from 'react-toastify'
 
 const CommitmentForm = () => {
@@ -61,13 +60,9 @@ const CommitmentForm = () => {
         return
       }
 
-      const wallet = new WalletClient()
-      const { publicKey: address } = await wallet.getPublicKey({ identityKey: true })
-
       const uhrpURL = await publishCommitment({
         url: submitURL,
         hostingMinutes: hostingTime,
-        address,
         serviceURL: hostingURL,
         testWerrLabel: false
       })

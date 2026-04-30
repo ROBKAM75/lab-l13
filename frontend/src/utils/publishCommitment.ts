@@ -87,7 +87,10 @@ export async function publishCommitment({
       networkPreset: 'mainnet'
     })
     try {
-      await broadcaster.broadcast(tx)
+      const timeout = new Promise<never>((_, reject) =>
+        setTimeout(() => reject(new Error('Overlay broadcast timeout')), 5000)
+      )
+      await Promise.race([broadcaster.broadcast(tx), timeout])
       console.log('Transaction created and broadcasted:', tx.id('hex'))
     } catch (broadcastErr) {
       console.warn('[commitmentToken] Overlay broadcast failed (file still stored):', broadcastErr)

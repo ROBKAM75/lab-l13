@@ -18,14 +18,15 @@ const CommitmentForm = () => {
   const hostingURL = 'https://nanostore.babbage.systems'
   const [committedURL, setCommittedURL] = useState<string | null>(null)
   const [downloading, setDownloading] = useState<boolean>(false)
+  const [lookupURL, setLookupURL] = useState<string>('')
+  const [lookupDownloading, setLookupDownloading] = useState<boolean>(false)
 
-  const handleDownload = async () => {
-    if (!committedURL) return
-    setDownloading(true)
+  const downloadByURL = async (uhrpUrl: string, setLoading: (v: boolean) => void) => {
+    setLoading(true)
     try {
-      console.log('Downloading file from UHRP URL:', committedURL)
+      console.log('Downloading file from UHRP URL:', uhrpUrl)
       const downloader = new StorageDownloader({ networkPreset: 'mainnet' })
-      const result = await downloader.download(committedURL)
+      const result = await downloader.download(uhrpUrl)
       const blob = new Blob([result.data], { type: result.mimeType || 'application/octet-stream' })
       const blobURL = URL.createObjectURL(blob)
       const a = document.createElement('a')
@@ -39,7 +40,16 @@ const CommitmentForm = () => {
       console.error('Failed to download file:', error)
       toast.error(`Download failed: ${error instanceof Error ? error.message : String(error)}`)
     }
-    setDownloading(false)
+    setLoading(false)
+  }
+
+  const handleDownload = () => downloadByURL(committedURL!, setDownloading)
+  const handleLookupDownload = () => {
+    if (!lookupURL.trim()) {
+      toast.error('Please paste a UHRP URL first')
+      return
+    }
+    downloadByURL(lookupURL.trim(), setLookupDownloading)
   }
 
   // TODO 1: Handle file input changes
@@ -203,6 +213,36 @@ const CommitmentForm = () => {
             </Button>
           </Box>
         )}
+        <Box mt={3} p={2} sx={{
+          background: 'rgba(123, 47, 247, 0.08)',
+          border: '1px solid rgba(123, 47, 247, 0.3)',
+          borderRadius: 2
+        }}>
+          <Typography variant="subtitle2" color="secondary" gutterBottom>
+            Download File by UHRP URL
+          </Typography>
+          <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 2 }}>
+            Paste any UHRP URL to retrieve the file from the BSV storage network.
+          </Typography>
+          <TextField
+            label="UHRP URL"
+            fullWidth
+            size="small"
+            value={lookupURL}
+            onChange={(e) => setLookupURL(e.target.value)}
+            placeholder="XUT..."
+            sx={{ mb: 2 }}
+          />
+          <Button
+            variant="outlined"
+            size="small"
+            color="secondary"
+            onClick={handleLookupDownload}
+            disabled={lookupDownloading}
+          >
+            {lookupDownloading ? 'Downloading...' : 'Download File'}
+          </Button>
+        </Box>
       </Box>
     </Container>
   )

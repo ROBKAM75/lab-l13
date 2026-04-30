@@ -86,9 +86,12 @@ export async function publishCommitment({
     const broadcaster = new TopicBroadcaster(['tm_uhrp'], {
       networkPreset: 'mainnet'
     })
-    await broadcaster.broadcast(tx)
-
-    console.log('Transaction created and broadcasted:', tx.id('hex'))
+    try {
+      await broadcaster.broadcast(tx)
+      console.log('Transaction created and broadcasted:', tx.id('hex'))
+    } catch (broadcastErr) {
+      console.warn('[commitmentToken] Overlay broadcast failed (file still stored):', broadcastErr)
+    }
     console.log('[commitmentToken] Token created with TXID:', tx.id('hex'))
     return `${UHRPURL}`
   } catch (err: unknown) {

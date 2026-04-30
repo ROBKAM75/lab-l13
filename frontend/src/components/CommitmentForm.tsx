@@ -5,6 +5,7 @@ import {
 import AddIcon from '@mui/icons-material/Add'
 import React, { useState, FormEvent, ChangeEvent } from 'react'
 import { publishCommitment } from '../utils/publishCommitment'
+import { StorageDownloader } from '@bsv/sdk'
 import { toast } from 'react-toastify'
 
 const CommitmentForm = () => {
@@ -16,6 +17,30 @@ const CommitmentForm = () => {
   const [useURL, setUseURL] = useState<boolean>(false)
   const hostingURL = 'https://nanostore.babbage.systems'
   const [committedURL, setCommittedURL] = useState<string | null>(null)
+  const [downloading, setDownloading] = useState<boolean>(false)
+
+  const handleDownload = async () => {
+    if (!committedURL) return
+    setDownloading(true)
+    try {
+      console.log('Downloading file from UHRP URL:', committedURL)
+      const downloader = new StorageDownloader({ networkPreset: 'mainnet' })
+      const result = await downloader.download(committedURL)
+      const blob = new Blob([result.data], { type: result.mimeType || 'application/octet-stream' })
+      const blobURL = URL.createObjectURL(blob)
+      const a = document.createElement('a')
+      a.href = blobURL
+      a.download = 'uhrp-file'
+      a.click()
+      URL.revokeObjectURL(blobURL)
+      console.log('File downloaded, mimeType:', result.mimeType)
+      toast.success('File downloaded successfully!')
+    } catch (error) {
+      console.error('Failed to download file:', error)
+      toast.error(`Download failed: ${error instanceof Error ? error.message : String(error)}`)
+    }
+    setDownloading(false)
+  }
 
   // TODO 1: Handle file input changes
   const handleFileChange = (e: ChangeEvent<HTMLInputElement>) => {
@@ -159,10 +184,23 @@ const CommitmentForm = () => {
             </Typography>
             <Typography
               variant="body2"
-              sx={{ fontFamily: 'monospace', wordBreak: 'break-all' }}
+              sx={{ fontFamily: 'monospace', wordBreak: 'break-all', mb: 1 }}
             >
               {committedURL}
             </Typography>
+            <Typography variant="caption" color="text.secondary" display="block" sx={{ mb: 2 }}>
+              To access it you'd use the StorageDownloader from @bsv/sdk, or a UHRP-compatible
+              browser/resolver that can look up the file by its hash. It's not a regular HTTP link —
+              it's a content-addressed URL (like IPFS but on BSV).
+            </Typography>
+            <Button
+              variant="outlined"
+              size="small"
+              onClick={handleDownload}
+              disabled={downloading}
+            >
+              {downloading ? 'Downloading...' : 'Download File'}
+            </Button>
           </Box>
         )}
       </Box>
